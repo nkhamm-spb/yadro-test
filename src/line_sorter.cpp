@@ -1,0 +1,125 @@
+#include "line_sorter.hpp"
+#include <algorithm>
+#include <vector>
+#include <queue>
+#include <iostream>
+
+namespace YadroTest {
+LineSorter::LineSorter(std::unique_ptr<ILine> inLine, std::unique_ptr<ILine> outLine,
+                       std::function<std::unique_ptr<ILine>(int)> makeTempFunction, int maxSize)
+    : InLine_(std::move(inLine)),
+      OutLine_(std::move(outLine)),
+      MakeTempFunction_(makeTempFunction),
+      Id_(0) {
+
+    std::vector<int> temp(maxSize);
+    int counter = 0;
+    int buffer = 0;
+    std::cout << "here" << std::endl;
+    while (InLine_->ReadAndMove(buffer)) {
+        std::cout << "HEREEE " << buffer << " " << maxSize << std::endl;
+
+        temp[counter] = buffer;
+        ++counter;
+        if (counter == maxSize) {
+            std::unique_ptr tempLine = MakeTempFunction_(Id_);
+            std::sort(temp.begin(), temp.end());
+
+            for (int element : temp) {
+                tempLine->WriteAndMove(element);
+            }
+
+            tempLine->MoveToBegin();
+            TemporaryLines_.push_back(std::move(tempLine));
+            counter = 0;
+            ++Id_;
+        }
+    }
+    std::cout << "here" << std::endl;
+
+    if (counter > 0) {
+        std::unique_ptr tempLine = MakeTempFunction_(Id_);
+        std::sort(temp.begin(), temp.begin() + counter);
+        for (int i = 0; i < counter; ++i) {
+            tempLine->WriteAndMove(temp[i]);
+        }
+        std::cout << "here" << std::endl;
+
+        tempLine->MoveToBegin();
+        TemporaryLines_.push_back(std::move(tempLine));
+        ++Id_;
+    }
+}
+
+void LineSorter::Merge_(std::unique_ptr<ILine>& out, std::unique_ptr<ILine>& left,
+                        std::unique_ptr<ILine>& right) {
+    int leftValue = 0;
+    int rightValue = 0;
+
+    while (left->ReadAndMove(leftValue) && right->ReadAndMove(rightValue)) {
+        std::cout << leftValue << " " << rightValue << std::endl;
+        if (leftValue < rightValue) {
+            out->WriteAndMove(leftValue);
+        } else {
+            out->WriteAndMove(rightValue);
+        }
+    }
+
+    while (left->ReadAndMove(leftValue)) {
+        out->WriteAndMove(leftValue);
+    }
+
+    while (right->ReadAndMove(rightValue)) {
+        out->WriteAndMove(rightValue);
+    }
+
+    out->MoveToBegin();
+}
+
+void LineSorter::SortPrepare_() {
+}
+
+void LineSorter::MakeSort() {
+    std::queue<int> tempLinesIdQueue;
+    for (int i = 0; i < Id_; ++i) {
+        tempLinesIdQueue.push(i);
+    }
+
+    while (tempLinesIdQueue.size() > 2) {
+        std::cout << tempLinesIdQueue.size() << std::endl;
+        int tempLineIdLeft = tempLinesIdQueue.front();
+        tempLinesIdQueue.pop();
+
+        int tempLineIdRight = tempLinesIdQueue.front();
+        tempLinesIdQueue.pop();
+
+        std::unique_ptr tempLine = MakeTempFunction_(Id_);
+        Merge_(tempLine, TemporaryLines_[tempLineIdLeft], TemporaryLines_[tempLineIdRight]);
+
+        TemporaryLines_.push_back(std::move(tempLine));
+        tempLinesIdQueue.push(Id_);
+        ++Id_;
+    }
+
+    int tempLineIdLeft = tempLinesIdQueue.front();
+    tempLinesIdQueue.pop();
+
+    int tempLineIdRight = tempLinesIdQueue.front();
+    tempLinesIdQueue.pop();
+
+    Merge_(OutLine_, TemporaryLines_[tempLineIdLeft], TemporaryLines_[tempLineIdRight]);
+}
+
+long long LineSorter::CalcTime() {
+    long long time = 0;
+    for (const std::unique_ptr<ILine>& current : TemporaryLines_) {
+        time += current->CalcTime();
+    }
+
+    time += InLine_->CalcTime();
+    time += OutLine_->CalcTime();
+
+    return time;
+}
+
+}  // namespace YadroTest
