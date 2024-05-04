@@ -32,9 +32,13 @@ LineSortingEmulate::LineSortingEmulate(const std::string& inputPath, const std::
         [this](int id) { return this->GetTemporaryLine_(id); }, maxSize);
 }
 
-void LineSortingEmulate::MakeSort() {
+long long LineSortingEmulate::MakeSort() {
     Sorter_.MakeSort();
-    std::cout << "Total time: " << Sorter_.CalcTime() << std::endl;
+
+    long long time = Sorter_.CalcTime();
+    std::cout << "Total time: " << time << std::endl;
+
+    return time;
 }
 
 std::unique_ptr<ILine> LineSortingEmulate::GetTemporaryLine_(int id) {

@@ -6,12 +6,13 @@
 #include <random>
 #include <algorithm>
 
-const std::string inFilePath = "/home/outcast/work/yadro-test/input.txt";
-const std::string outFilePath = "/home/outcast/work/yadro-test/out.txt";
+const std::string inFilePath = "../../input.txt";
+const std::string outFilePath = "../../out.txt";
 
 static std::mt19937 mt(time(nullptr));
 
-void SortSomeNumbers(int num, int maxSize, std::vector<int> &in, std::vector<int> &out) {
+long long SortSomeNumbers(int num, int maxSize, std::vector<int> &in, std::vector<int> &out,
+                          const std::string &config = "") {
     std::fstream inputFile(inFilePath, std::ios::out | std::ios::trunc | std::ios::binary);
 
     for (int i = 0; i < num; ++i) {
@@ -23,8 +24,8 @@ void SortSomeNumbers(int num, int maxSize, std::vector<int> &in, std::vector<int
 
     inputFile.close();
 
-    YadroTest::LineSortingEmulate LineSorter(inFilePath, outFilePath, maxSize);
-    LineSorter.MakeSort();
+    YadroTest::LineSortingEmulate LineSorter(inFilePath, outFilePath, maxSize, config);
+    long long sortTime = LineSorter.MakeSort();
 
     std::fstream outputFile(outFilePath, std::ios::in | std::ios::binary);
 
@@ -33,6 +34,8 @@ void SortSomeNumbers(int num, int maxSize, std::vector<int> &in, std::vector<int
         outputFile.read(reinterpret_cast<char *>(&val), sizeof(int));
         out.push_back(val);
     }
+
+    return sortTime;
 }
 
 TEST(YadroSortTest, EmptyFile) {
@@ -67,6 +70,17 @@ TEST(YadroSortTest, BigMaxSize) {
     ASSERT_EQ(in, out);
 }
 
+TEST(YadroSortTest, Config) {
+    std::vector<int> in, out;
+
+    std::ofstream configFile("../../config.txt");
+    configFile << "5 4 2";
+    configFile.close();
+
+    long long sortTime = SortSomeNumbers(10, 10000, in, out, "../../config.txt");
+
+    ASSERT_EQ(280, sortTime);
+}
 
 int main(int argc, char **argv) {
     testing::InitGoogleTest(&argc, argv);
