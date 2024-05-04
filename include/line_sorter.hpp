@@ -21,7 +21,9 @@ public:
     LineSorter() = default;
 
     void MakeSort();
-    long long CalcTime();
+    long long CalcTime()  const;
+    int GetOutSize();
+    int GetInSize();
 
 private:
     void Merge_(std::unique_ptr<ILine>& out, std::unique_ptr<ILine>& left,
@@ -33,6 +35,5 @@ private:
     std::unique_ptr<ILine> InLine_;
     std::unique_ptr<ILine> OutLine_;
     int Id_;
-    // int MaxSize_;
 };
 }  // namespace YadroTest
