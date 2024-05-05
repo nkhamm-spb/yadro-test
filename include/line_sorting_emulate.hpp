@@ -10,7 +10,7 @@ public:
     LineSortingEmulate(const std::string& inputPath, const std::string& outPath, int maxSize,
                        const std::string& configFilePath = "", std::string tempPath = "tmp/");
     ~LineSortingEmulate();
-    void MakeSort();
+    long long MakeSort();
     int GetInSize();
     int GetOutSize();
 

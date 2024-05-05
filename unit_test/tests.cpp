@@ -30,7 +30,7 @@ long long SortSomeNumbers(int num, int maxSize, std::vector<int> &in, std::vecto
         outputFile.read(reinterpret_cast<char *>(&val), sizeof(int));
         out.push_back(val);
     }
-
+    
     return sortTime;
 }
 
@@ -68,6 +68,7 @@ TEST(YadroSortTest, Config) {
     long long sortTime = SortSomeNumbers(10, 10000, in, out, "../../config.txt");
 
     ASSERT_EQ(280, sortTime);
+    ASSERT_EQ(in, out);
 }
 
 int main(int argc, char **argv) {
